@@ -30,6 +30,17 @@ export default class Screen extends Component {
           "icegatheringstatechange",
           checkState
         );
+
+        this.rtcConnection.addEventListener("track", e => {
+          console.log(e.streams[0]);
+          const videoElement = this.videoRef.current;
+          if (!videoElement) {
+            throw new Error("Can not get videoElement");
+          }
+          videoElement.srcObject = e.streams[0];
+          this.context.mediaRecorder = new ThanosarMediaRecorder(e.streams[0]);
+          console.log("out");
+        });
       }
     });
 
@@ -63,11 +74,11 @@ export default class Screen extends Component {
             if (!offer) {
               throw new Error("localDescription is null");
             }
-            fetch("{URL}", {
+            fetch("http://localhost:5000/offer", {
               body: JSON.stringify({
                 sdp: offer.sdp,
                 type: offer.type,
-                video_transform: "edges"
+                video_transform: "edges",
               }),
               method: "POST"
             })
