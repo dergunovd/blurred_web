@@ -1,7 +1,8 @@
 import React, { Component } from "react";
-import Record from "./Record";
-import { StoreContext } from "../store/StoreContext";
-import { ThanosarMediaRecorder } from "../utils/createMediaRecorder";
+import Record from "../Record";
+import { StoreContext } from "../../store/StoreContext";
+import { ThanosarMediaRecorder } from "../../utils/createMediaRecorder";
+import css from "./Screen.module.sass";
 
 export default class Screen extends Component {
   static contextType = StoreContext;
@@ -59,11 +60,9 @@ export default class Screen extends Component {
 
         this.context.mediaRecorder = new ThanosarMediaRecorder(stream);
 
-        stream.getTracks().forEach(
-          (track: MediaStreamTrack): void => {
-            this.rtcConnection.addTrack(track, stream);
-          }
-        );
+        stream.getTracks().forEach((track: MediaStreamTrack): void => {
+          this.rtcConnection.addTrack(track, stream);
+        });
 
         this.rtcConnection
           .createOffer()
@@ -78,7 +77,7 @@ export default class Screen extends Component {
               body: JSON.stringify({
                 sdp: offer.sdp,
                 type: offer.type,
-                video_transform: "edges",
+                video_transform: "edges"
               }),
               method: "POST"
             })
@@ -97,15 +96,13 @@ export default class Screen extends Component {
 
   render() {
     return (
-      <div>
-        <figure className="video-layout">
-          <video
-            id="videoLayout"
-            className="video"
-            autoPlay
-            ref={this.videoRef}
-          />
-        </figure>
+      <div className={css.videoWrap}>
+        <video
+          id="videoLayout"
+          className={css.video}
+          autoPlay
+          ref={this.videoRef}
+        />
         <Record />
       </div>
     );

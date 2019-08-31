@@ -1,12 +1,13 @@
 import React, { Component } from "react";
-import Screen from "./components/Screen";
+import Index from "./components/Screen";
 import { StoreContextProvider } from "./store/StoreContext";
+import "./App.sass";
 
 class App extends Component {
   render() {
     return (
       <StoreContextProvider>
-        <Screen />
+        <Index />
       </StoreContextProvider>
     );
   }
