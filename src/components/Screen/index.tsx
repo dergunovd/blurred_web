@@ -3,8 +3,11 @@ import Record from "../Record";
 import { StoreContext } from "../../store/StoreContext";
 import { ThanosarMediaRecorder } from "../../utils/createMediaRecorder";
 import css from "./Screen.module.sass";
+import { RouteComponentProps, withRouter } from "react-router";
 
-export default class Screen extends Component {
+interface ScreenProps extends RouteComponentProps<{ type: string }> {}
+
+class Screen extends Component<ScreenProps> {
   static contextType = StoreContext;
 
   private rtcConnection: RTCPeerConnection = new RTCPeerConnection();
@@ -46,6 +49,7 @@ export default class Screen extends Component {
     });
 
   componentDidMount() {
+    const { type } = this.props.match.params;
     navigator.getUserMedia(
       {
         audio: false,
@@ -77,7 +81,7 @@ export default class Screen extends Component {
               body: JSON.stringify({
                 sdp: offer.sdp,
                 type: offer.type,
-                video_transform: "edges"
+                video_transform: type
               }),
               method: "POST"
             })
@@ -108,3 +112,5 @@ export default class Screen extends Component {
     );
   }
 }
+
+export default withRouter(Screen);
