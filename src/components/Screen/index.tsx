@@ -14,15 +14,15 @@ class Screen extends Component<ScreenProps> {
 
   private videoRef = React.createRef<HTMLVideoElement>();
 
-  private checkIceGatheringState: () => Promise<void> = () =>
+  private checkIceGatheringState: (rtcConnection: RTCPeerConnection) => Promise<void> = (rtcConnection) =>
     new Promise(resolve => {
-      if (this.rtcConnection.iceGatheringState === "complete") {
+      if (rtcConnection.iceGatheringState === "complete") {
         resolve();
       } else {
         const checkState: () => void = () => {
-          console.log(this.rtcConnection.iceGatheringState);
-          if (this.rtcConnection.iceGatheringState === "complete") {
-            this.rtcConnection.removeEventListener(
+          console.log(rtcConnection.iceGatheringState);
+          if (rtcConnection.iceGatheringState === "complete") {
+            rtcConnection.removeEventListener(
               "icegatheringstatechange",
               checkState
             );
@@ -30,26 +30,29 @@ class Screen extends Component<ScreenProps> {
           }
         };
 
-        this.rtcConnection.addEventListener(
+        rtcConnection.addEventListener(
           "icegatheringstatechange",
           checkState
         );
 
-        this.rtcConnection.addEventListener("track", e => {
-          console.log(e.streams[0]);
+        rtcConnection.addEventListener("track", e => {
           const videoElement = this.videoRef.current;
+
           if (!videoElement) {
             throw new Error("Can not get videoElement");
           }
           videoElement.srcObject = e.streams[0];
+          console.log('NOT SAVE', e.streams[0]);
           this.context.mediaRecorder = new ThanosarMediaRecorder(e.streams[0]);
-          console.log("out");
+          this.forceUpdate();
         });
       }
     });
 
   componentDidMount() {
-    const { type } = this.props.match.params;
+    // @ts-ignore
+    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+
     navigator.getUserMedia(
       {
         audio: false,
@@ -61,27 +64,26 @@ class Screen extends Component<ScreenProps> {
           throw new Error("Can not get videoElement");
         }
         videoElement.srcObject = stream;
-
+console.log('SAVE', stream);
         this.context.mediaRecorder = new ThanosarMediaRecorder(stream);
-
         stream.getTracks().forEach((track: MediaStreamTrack): void => {
           this.rtcConnection.addTrack(track, stream);
         });
-
+        // return;
         this.rtcConnection
           .createOffer()
           .then(offer => this.rtcConnection.setLocalDescription(offer))
-          .then(this.checkIceGatheringState)
+          .then(() => this.checkIceGatheringState(this.rtcConnection))
           .then(() => {
             const offer = this.rtcConnection.localDescription;
             if (!offer) {
               throw new Error("localDescription is null");
             }
-            fetch("http://localhost:5000/offer", {
+            fetch("http://192.168.1.64:5000/offer", {
               body: JSON.stringify({
                 sdp: offer.sdp,
                 type: offer.type,
-                video_transform: type
+                video_transform: 'cartoon'
               }),
               method: "POST"
             })
@@ -96,6 +98,11 @@ class Screen extends Component<ScreenProps> {
       },
       error => console.error(error)
     );
+  }
+
+  componentWillUnmount(): void {
+    this.rtcConnection.close();
+    this.context.mediaRecorder.stopRecord();
   }
 
   render() {

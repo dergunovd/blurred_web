@@ -9,5 +9,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="thanosAR" />
+    <orderEntry type="module" module-name="thanosar_web" />
   </component>
 </module>

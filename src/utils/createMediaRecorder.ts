@@ -23,13 +23,16 @@ export class ThanosarMediaRecorder {
 
   stopRecord = () => {
     this.mediaRecorder.stop();
+    this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
     console.log("stop");
   };
 
-  getBlob = () => new Blob(this.blobs, { type: this.mediaRecorder.mimeType });
+  getBlob = () => new Blob(this.blobs, { type: 'video/webm' });
 
   downloadVideo = () => {
     console.log("download");
+    console.log(this.blobs);
+    console.log(this.mediaRecorder);
     const blob = this.getBlob();
     console.log(blob);
 

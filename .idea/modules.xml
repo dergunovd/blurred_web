@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../thanosAR/.idea/thanosAR.iml" filepath="$PROJECT_DIR$/../thanosAR/.idea/thanosAR.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/thanosar_react.iml" filepath="$PROJECT_DIR$/.idea/thanosar_react.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../thanosar_web/.idea/thanosar_web.iml" filepath="$PROJECT_DIR$/../thanosar_web/.idea/thanosar_web.iml" />
     </modules>
   </component>
 </project>
