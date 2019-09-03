@@ -56,7 +56,7 @@ class Screen extends Component<ScreenProps> {
     navigator.getUserMedia(
       {
         audio: false,
-        video: true
+        video: { width: 640, height: 480 }
       },
       (stream: MediaStream): void => {
         const videoElement = this.videoRef.current;
