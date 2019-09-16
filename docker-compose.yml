@@ -1,0 +1,8 @@
+version: "3"
+
+services:
+  client:
+    container_name: thanos_client
+    build: .
+    volumes:
+      - ./client/build:/client/build
