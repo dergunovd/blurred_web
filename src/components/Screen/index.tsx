@@ -12,15 +12,23 @@ class Screen extends Component<ScreenProps> {
 
   private rtcConnection: RTCPeerConnection = new RTCPeerConnection();
 
+  private dataChannel: RTCDataChannel = this.rtcConnection.createDataChannel(
+    "stream",
+    { ordered: true }
+  );
+
+  private messageId: number = 0;
+
   private videoRef = React.createRef<HTMLVideoElement>();
 
-  private checkIceGatheringState: (rtcConnection: RTCPeerConnection) => Promise<void> = (rtcConnection) =>
+  private checkIceGatheringState: (
+    rtcConnection: RTCPeerConnection
+  ) => Promise<void> = rtcConnection =>
     new Promise(resolve => {
       if (rtcConnection.iceGatheringState === "complete") {
         resolve();
       } else {
         const checkState: () => void = () => {
-          console.log(rtcConnection.iceGatheringState);
           if (rtcConnection.iceGatheringState === "complete") {
             rtcConnection.removeEventListener(
               "icegatheringstatechange",
@@ -30,10 +38,7 @@ class Screen extends Component<ScreenProps> {
           }
         };
 
-        rtcConnection.addEventListener(
-          "icegatheringstatechange",
-          checkState
-        );
+        rtcConnection.addEventListener("icegatheringstatechange", checkState);
 
         rtcConnection.addEventListener("track", e => {
           const videoElement = this.videoRef.current;
@@ -42,7 +47,7 @@ class Screen extends Component<ScreenProps> {
             throw new Error("Can not get videoElement");
           }
           videoElement.srcObject = e.streams[0];
-          console.log('NOT SAVE', e.streams[0]);
+          console.log("NOT SAVE", e.streams[0]);
           this.context.mediaRecorder = new ThanosarMediaRecorder(e.streams[0]);
           this.forceUpdate();
         });
@@ -50,13 +55,17 @@ class Screen extends Component<ScreenProps> {
     });
 
   componentDidMount() {
+    // navigator.getUserMedia =
+    // navigator.getUserMedia ||
     // @ts-ignore
-    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    // navigator.webkitGetUserMedia ||
+    // @ts-ignore
+    // navigator.mozGetUserMedia;
 
     navigator.getUserMedia(
       {
         audio: false,
-        video: { width: 640, height: 480 }
+        video: { width: 640, height: 480, frameRate: { ideal: 10, max: 30 } }
       },
       (stream: MediaStream): void => {
         const videoElement = this.videoRef.current;
@@ -64,7 +73,7 @@ class Screen extends Component<ScreenProps> {
           throw new Error("Can not get videoElement");
         }
         videoElement.srcObject = stream;
-console.log('SAVE', stream);
+
         this.context.mediaRecorder = new ThanosarMediaRecorder(stream);
         stream.getTracks().forEach((track: MediaStreamTrack): void => {
           this.rtcConnection.addTrack(track, stream);
@@ -79,11 +88,15 @@ console.log('SAVE', stream);
             if (!offer) {
               throw new Error("localDescription is null");
             }
-            fetch("http://192.168.1.64:5000/offer", {
+            fetch("http://0.0.0.0:5000/offer", {
               body: JSON.stringify({
                 sdp: offer.sdp,
                 type: offer.type,
-                video_transform: 'cartoon'
+                video_transform: {
+                  name: "inpaint",
+                  src: ["all"],
+                  frame_size: [640, 480]
+                }
               }),
               method: "POST"
             })
@@ -105,6 +118,20 @@ console.log('SAVE', stream);
     this.context.mediaRecorder.stopRecord();
   }
 
+  generateMessageId = (): number => this.messageId++;
+
+  clickHandler = (): void => {
+    this.dataChannel.onopen = () => {
+      const dataChannelMessage = {
+        message_id: this.generateMessageId(),
+        name: "inpaint",
+        src: ["all"]
+      };
+
+      this.dataChannel.send(JSON.stringify(dataChannelMessage));
+    };
+  };
+
   render() {
     return (
       <div className={css.videoWrap}>
@@ -113,6 +140,7 @@ console.log('SAVE', stream);
           className={css.video}
           autoPlay
           ref={this.videoRef}
+          onClick={this.clickHandler}
         />
         <Record />
       </div>
