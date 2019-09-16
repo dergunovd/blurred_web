@@ -47,7 +47,9 @@ class Screen extends Component<ScreenProps> {
             throw new Error("Can not get videoElement");
           }
           videoElement.srcObject = e.streams[0];
-          console.log("NOT SAVE", e.streams[0]);
+          e.streams[0]
+            .getTracks()
+            .forEach(track => track.applyConstraints({ frameRate: 2 }));
           this.context.mediaRecorder = new ThanosarMediaRecorder(e.streams[0]);
           this.forceUpdate();
         });
@@ -65,7 +67,7 @@ class Screen extends Component<ScreenProps> {
     navigator.getUserMedia(
       {
         audio: false,
-        video: { width: 640, height: 480, frameRate: { ideal: 10, max: 30 } }
+        video: { width: 640, height: 480, frameRate: { ideal: 2, max: 2 } }
       },
       (stream: MediaStream): void => {
         const videoElement = this.videoRef.current;
@@ -88,24 +90,24 @@ class Screen extends Component<ScreenProps> {
             if (!offer) {
               throw new Error("localDescription is null");
             }
-            fetch("http://0.0.0.0:5000/offer", {
-              body: JSON.stringify({
-                sdp: offer.sdp,
-                type: offer.type,
-                video_transform: {
-                  name: "inpaint",
-                  src: ["all"],
-                  frame_size: [640, 480]
-                }
-              }),
-              method: "POST"
-            })
-              .then(res => res.json())
-              .then(answer => this.rtcConnection.setRemoteDescription(answer))
-              .then(() => {
-                console.log(this.rtcConnection.remoteDescription);
-              })
-              .catch(error => console.error(error));
+            // fetch("http://0.0.0.0:5000/offer", {
+            //   body: JSON.stringify({
+            //     sdp: offer.sdp,
+            //     type: offer.type,
+            //     video_transform: {
+            //       name: "inpaint",
+            //       src: ["all"],
+            //       frame_size: [640, 480]
+            //     }
+            //   }),
+            //   method: "POST"
+            // })
+            //   .then(res => res.json())
+            //   .then(answer => this.rtcConnection.setRemoteDescription(answer))
+            //   .then(() => {
+            //     console.log(this.rtcConnection.remoteDescription);
+            //   })
+            //   .catch(error => console.error(error));
           })
           .catch(error => console.error(error));
       },
