@@ -104,7 +104,7 @@ class Screen extends Component<ScreenProps> {
         if (!offer) {
           throw new Error("localDescription is null");
         }
-        fetch("http://localhost:5000/offer", {
+        fetch("http://0.0.0.0:5000/offer", {
           body: JSON.stringify({
             sdp: offer.sdp,
             type: offer.type,

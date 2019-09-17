@@ -90,24 +90,24 @@ class Screen extends Component<ScreenProps> {
             if (!offer) {
               throw new Error("localDescription is null");
             }
-            // fetch("http://0.0.0.0:5000/offer", {
-            //   body: JSON.stringify({
-            //     sdp: offer.sdp,
-            //     type: offer.type,
-            //     video_transform: {
-            //       name: "inpaint",
-            //       src: ["all"],
-            //       frame_size: [640, 480]
-            //     }
-            //   }),
-            //   method: "POST"
-            // })
-            //   .then(res => res.json())
-            //   .then(answer => this.rtcConnection.setRemoteDescription(answer))
-            //   .then(() => {
-            //     console.log(this.rtcConnection.remoteDescription);
-            //   })
-            //   .catch(error => console.error(error));
+            fetch("http://0.0.0.0:5000/offer", {
+              body: JSON.stringify({
+                sdp: offer.sdp,
+                type: offer.type,
+                video_transform: {
+                  name: "inpaint",
+                  src: ["all"],
+                  frame_size: [640, 480]
+                }
+              }),
+              method: "POST"
+            })
+              .then(res => res.json())
+              .then(answer => this.rtcConnection.setRemoteDescription(answer))
+              .then(() => {
+                console.log(this.rtcConnection.remoteDescription);
+              })
+              .catch(error => console.error(error));
           })
           .catch(error => console.error(error));
       },
