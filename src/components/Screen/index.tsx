@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import Record from "../Record";
 import { StoreContext } from "../../store/StoreContext";
-import { ThanosarMediaRecorder } from "../../utils/createMediaRecorder";
+import { BlurredMediaRecorder } from "../../utils/createMediaRecorder";
 import css from "./Screen.module.sass";
 import { RouteComponentProps, withRouter } from "react-router";
 
@@ -50,7 +50,7 @@ class Screen extends Component<ScreenProps> {
           e.streams[0]
             .getTracks()
             .forEach(track => track.applyConstraints({ frameRate: 2 }));
-          this.context.mediaRecorder = new ThanosarMediaRecorder(e.streams[0]);
+          this.context.mediaRecorder = new BlurredMediaRecorder(e.streams[0]);
           this.forceUpdate();
         });
       }
@@ -76,7 +76,7 @@ class Screen extends Component<ScreenProps> {
         }
         videoElement.srcObject = stream;
 
-        this.context.mediaRecorder = new ThanosarMediaRecorder(stream);
+        this.context.mediaRecorder = new BlurredMediaRecorder(stream);
         stream.getTracks().forEach((track: MediaStreamTrack): void => {
           this.rtcConnection.addTrack(track, stream);
         });

@@ -1,8 +1,8 @@
 version: "3"
 
 services:
-  thanos_client:
-    container_name: thanos_client
+  blurred_client:
+    container_name: blurred_client
     build: .
     restart: on-failure
     volumes:

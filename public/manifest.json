@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Blurred",
+  "name": "Blurred - realtime removing object from video",
   "icons": [
     {
       "src": "favicon.ico",

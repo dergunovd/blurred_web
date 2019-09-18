@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { RouteComponentProps, withRouter } from "react-router";
 import Record from "../Record";
 import { StoreContext } from "../../store/StoreContext";
-import { ThanosarMediaRecorder } from "../../utils/createMediaRecorder";
+import { BlurredMediaRecorder } from "../../utils/createMediaRecorder";
 import css from "./Screen.module.sass";
 
 interface ScreenProps extends RouteComponentProps<{ type: string }> {}
@@ -43,7 +43,7 @@ class Screen extends Component<ScreenProps> {
             throw new Error("Can not get videoElement");
           }
           videoElement.srcObject = e.streams[0];
-          this.context.mediaRecorder = new ThanosarMediaRecorder(e.streams[0]);
+          this.context.mediaRecorder = new BlurredMediaRecorder(e.streams[0]);
           console.log("out");
         });
       }
@@ -62,7 +62,7 @@ class Screen extends Component<ScreenProps> {
         }
         videoElement.srcObject = stream;
 
-        this.context.mediaRecorder = new ThanosarMediaRecorder(stream);
+        this.context.mediaRecorder = new BlurredMediaRecorder(stream);
 
         this.rtcConnect();
       },
