@@ -1,7 +1,7 @@
 import BlobEvent from "../interfaces/BlobEvent.interface";
 import { MediaRecorder as MediaRecorderInterface } from "../interfaces/MediaRecorder.interface";
 
-export class ThanosarMediaRecorder {
+export class BlurredMediaRecorder {
   stream: MediaStream;
   mediaRecorder: MediaRecorderInterface;
   blobs: Blob[] = [];
@@ -40,7 +40,7 @@ export class ThanosarMediaRecorder {
       const saveButtonElement = document.createElement("a");
       document.body.append(saveButtonElement);
       saveButtonElement.href = URL.createObjectURL(blob);
-      saveButtonElement.download = "thanosAr.webm";
+      saveButtonElement.download = `blurred_${new Date().toISOString()}.webm`;
       saveButtonElement.click();
       saveButtonElement.remove();
       this.clear();

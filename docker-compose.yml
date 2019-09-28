@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  blurred_client:
+    container_name: blurred_client
+    build: .
+    restart: on-failure
+    volumes:
+      - ./client:/client/build
+    command: yarn build
