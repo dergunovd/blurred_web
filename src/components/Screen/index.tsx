@@ -4,6 +4,7 @@ import { StoreContext } from "../../store/StoreContext";
 import { BlurredMediaRecorder } from "../../utils/createMediaRecorder";
 import css from "./Screen.module.sass";
 import { RouteComponentProps, withRouter } from "react-router";
+import {type} from 'os';
 
 interface ScreenProps extends RouteComponentProps<{ type: string }> {}
 
@@ -47,9 +48,6 @@ class Screen extends Component<ScreenProps> {
             throw new Error("Can not get videoElement");
           }
           videoElement.srcObject = e.streams[0];
-          e.streams[0]
-            .getTracks()
-            .forEach(track => track.applyConstraints({ frameRate: 2 }));
           this.context.mediaRecorder = new BlurredMediaRecorder(e.streams[0]);
           this.forceUpdate();
         });
@@ -64,10 +62,21 @@ class Screen extends Component<ScreenProps> {
     // @ts-ignore
     // navigator.mozGetUserMedia;
 
+    this.dataChannel.onmessage = (message: MessageEvent) => {
+      const videoElement = this.videoRef.current;
+      const jsonMessage = JSON.parse(message.data.replace(/'/g, '"'));
+      console.log('DataChannel message:', jsonMessage);
+      if (videoElement && videoElement.srcObject instanceof MediaStream) {
+        videoElement.srcObject.getTracks().forEach(track =>
+          track.applyConstraints({ frameRate: jsonMessage.fps })
+        );
+      }
+    };
+
     navigator.getUserMedia(
       {
         audio: false,
-        video: { width: 640, height: 480, frameRate: { ideal: 2, max: 2 } }
+        video: { width: 640, height: 480, frameRate: { ideal: 30, max: 30 } }
       },
       (stream: MediaStream): void => {
         const videoElement = this.videoRef.current;
@@ -90,24 +99,26 @@ class Screen extends Component<ScreenProps> {
             if (!offer) {
               throw new Error("localDescription is null");
             }
-            fetch("http://0.0.0.0:5000/offer", {
-              body: JSON.stringify({
-                sdp: offer.sdp,
-                type: offer.type,
-                video_transform: {
-                  name: "inpaint",
-                  src: ["all"],
-                  frame_size: [640, 480]
-                }
-              }),
-              method: "POST"
-            })
-              .then(res => res.json())
-              .then(answer => this.rtcConnection.setRemoteDescription(answer))
-              .then(() => {
-                console.log(this.rtcConnection.remoteDescription);
+            setTimeout(() => {
+              fetch("http://0.0.0.0:5000/offer", {
+                body: JSON.stringify({
+                  sdp: offer.sdp,
+                  type: offer.type,
+                  video_transform: {
+                    name: "boxes",
+                    src: [],
+                    frame_size: [640, 480]
+                  }
+                }),
+                method: "POST"
               })
-              .catch(error => console.error(error));
+                .then(res => res.json())
+                .then(answer => this.rtcConnection.setRemoteDescription(answer))
+                .then(() => {
+                  console.log(this.rtcConnection.remoteDescription);
+                })
+                .catch(error => console.error(error));
+            }, 3000);
           })
           .catch(error => console.error(error));
       },
@@ -123,15 +134,19 @@ class Screen extends Component<ScreenProps> {
   generateMessageId = (): number => this.messageId++;
 
   clickHandler = (): void => {
-    this.dataChannel.onopen = () => {
-      const dataChannelMessage = {
-        message_id: this.generateMessageId(),
-        name: "inpaint",
-        src: ["all"]
-      };
-
-      this.dataChannel.send(JSON.stringify(dataChannelMessage));
+    const dataChannelMessage = {
+      message_id: this.generateMessageId(),
+      name: "inpaint",
+      src: ["all"]
     };
+    console.log('dataChannelMessage', dataChannelMessage);
+    const sendMessage = () => this.dataChannel.send(JSON.stringify(dataChannelMessage));
+
+    if (this.dataChannel.readyState === 'open') {
+      sendMessage();
+    } else {
+      this.dataChannel.onopen = sendMessage;
+    }
   };
 
   render() {
