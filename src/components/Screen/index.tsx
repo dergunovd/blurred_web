@@ -4,7 +4,6 @@ import { StoreContext } from "../../store/StoreContext";
 import { BlurredMediaRecorder } from "../../utils/createMediaRecorder";
 import css from "./Screen.module.sass";
 import { RouteComponentProps, withRouter } from "react-router";
-import {type} from 'os';
 
 interface ScreenProps extends RouteComponentProps<{ type: string }> {}
 
@@ -20,7 +19,21 @@ class Screen extends Component<ScreenProps> {
 
   private messageId: number = 0;
 
+  private dataChannelTimer?: number = undefined;
+
+  private videoTransformName: string = '';
+
+  private videoTransformSrc: string[] = [];
+
   private videoRef = React.createRef<HTMLVideoElement>();
+
+  private startDataChannelTimer = () =>
+    this.dataChannelTimer = +setInterval(this.sendDataChannelMessage, 2000);
+
+  private stopDataChannelTimer = () => {
+    clearInterval(this.dataChannelTimer);
+    this.dataChannelTimer = undefined;
+  };
 
   private checkIceGatheringState: (
     rtcConnection: RTCPeerConnection
@@ -105,8 +118,8 @@ class Screen extends Component<ScreenProps> {
                   sdp: offer.sdp,
                   type: offer.type,
                   video_transform: {
-                    name: "boxes",
-                    src: [],
+                    name: this.videoTransformName,
+                    src: this.videoTransformSrc,
                     frame_size: [640, 480]
                   }
                 }),
@@ -115,6 +128,10 @@ class Screen extends Component<ScreenProps> {
                 .then(res => res.json())
                 .then(answer => this.rtcConnection.setRemoteDescription(answer))
                 .then(() => {
+                  this.videoTransformName = 'boxes';
+                  this.videoTransformSrc = [''];
+                  this.sendDataChannelMessage();
+                  this.startDataChannelTimer();
                   console.log(this.rtcConnection.remoteDescription);
                 })
                 .catch(error => console.error(error));
@@ -129,15 +146,16 @@ class Screen extends Component<ScreenProps> {
   componentWillUnmount(): void {
     this.rtcConnection.close();
     this.context.mediaRecorder.stopRecord();
+    this.stopDataChannelTimer();
   }
 
   generateMessageId = (): number => this.messageId++;
 
-  clickHandler = (): void => {
+  sendDataChannelMessage = (): void => {
     const dataChannelMessage = {
       message_id: this.generateMessageId(),
-      name: "inpaint",
-      src: ["all"]
+      name: this.videoTransformName,
+      src: this.videoTransformSrc,
     };
     console.log('dataChannelMessage', dataChannelMessage);
     const sendMessage = () => this.dataChannel.send(JSON.stringify(dataChannelMessage));
@@ -147,6 +165,12 @@ class Screen extends Component<ScreenProps> {
     } else {
       this.dataChannel.onopen = sendMessage;
     }
+  };
+
+  clickHandler = (): void => {
+    this.videoTransformName = 'inpaint';
+    this.videoTransformSrc = ['all'];
+    this.sendDataChannelMessage();
   };
 
   render() {
