@@ -5,6 +5,8 @@ services:
     container_name: blurred_client
     build: .
     restart: on-failure
+    ports:
+      - "3000:3000"
     volumes:
       - ./client:/client/build
-    command: yarn build
+    command: yarn start
