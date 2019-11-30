@@ -10,7 +10,16 @@ interface ScreenProps extends RouteComponentProps<{ type: string }> {}
 class Screen extends Component<ScreenProps> {
   static contextType = StoreContext;
 
-  private rtcConnection: RTCPeerConnection = new RTCPeerConnection();
+  private rtcConnection: RTCPeerConnection = new RTCPeerConnection(
+    {
+      sdpSemantics: 'unified-plan',
+      iceServers: [
+        {
+          urls: 'stun:stun.l.google.com:19302'
+        }
+      ],
+    }
+  );
 
   private dataChannel: RTCDataChannel = this.rtcConnection.createDataChannel(
     "stream",
@@ -113,7 +122,7 @@ class Screen extends Component<ScreenProps> {
               throw new Error("localDescription is null");
             }
             setTimeout(() => {
-              fetch("http://0.0.0.0:5000/offer", {
+              fetch("http://0.0.0.0:5000/offer", { // Server ip: 89.108.68.156
                 body: JSON.stringify({
                   sdp: offer.sdp,
                   type: offer.type,
