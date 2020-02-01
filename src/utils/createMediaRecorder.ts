@@ -11,9 +11,9 @@ export class BlurredMediaRecorder {
     // @ts-ignore
     this.mediaRecorder = new MediaRecorder(stream);
     this.mediaRecorder.ondataavailable = (e: BlobEvent) => {
-      console.log('ondataavailable');
+      console.log("ondataavailable");
       this.blobs.push(e.data);
-    }
+    };
   }
 
   startRecord = () => {
@@ -27,7 +27,7 @@ export class BlurredMediaRecorder {
     console.log("stop");
   };
 
-  getBlob = () => new Blob(this.blobs, { type: 'video/webm' });
+  getBlob = () => new Blob(this.blobs, { type: "video/webm" });
 
   downloadVideo = () => {
     console.log("download");

@@ -2,7 +2,7 @@ import React from "react";
 import GlobalStore from "../interfaces/GlobalStore.interface";
 
 const globalStore: GlobalStore = {
-  mediaRecorder: null,
+  mediaRecorder: null
 };
 
 export const StoreContext = React.createContext(globalStore);

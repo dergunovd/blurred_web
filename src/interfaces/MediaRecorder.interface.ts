@@ -1,10 +1,10 @@
-import BlobEvent from './BlobEvent.interface';
+import BlobEvent from "./BlobEvent.interface";
 
 interface MediaRecorderErrorEvent extends ErrorEvent {}
 
 export interface MediaRecorder {
   mimeType: string;
-  state: 'inactive' | 'recording' | 'paused';
+  state: "inactive" | "recording" | "paused";
   stream: MediaStream;
   ignoreMutedMedia: boolean;
   videoBitsPerSecond: number;
